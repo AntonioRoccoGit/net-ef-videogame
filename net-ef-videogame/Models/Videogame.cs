@@ -28,6 +28,12 @@ namespace net_ef_videogame.Models
         //RELATIONS
         [Column("software_house_id")]
         public long SoftwareHouseId { get; set; }
-        public SoftwareHouse SoftwareHouse { get; set; }
+        public SoftwareHouse? SoftwareHouse { get; set; }
+
+        //METHODS
+        public override string ToString()
+        {
+            return $"{Name} - Descrizione: {Overview} {Environment.NewLine} Rilasciato: {(ReleaseDate.ToString("dd-MM-yyyy"))} da - {(SoftwareHouse != null ? SoftwareHouse.Name : "Non disponibile")}";
+        }
     }   
 }

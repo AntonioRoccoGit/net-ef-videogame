@@ -1,4 +1,5 @@
-﻿using net_ef_videogame.Database;
+﻿using Microsoft.EntityFrameworkCore;
+using net_ef_videogame.Database;
 using net_ef_videogame.Models;
 
 namespace net_ef_videogame
@@ -18,7 +19,7 @@ namespace net_ef_videogame
             do
             {
                 Console.WriteLine("\nSeleziona un operazione: ");
-                Console.WriteLine("-1 Aggiungi un videogame\n-2 Cerca videogame per ID\n-3 Cerca videogame per Titolo\n-4 Elimina un videogioco\n-5 Chiudi il programma");
+                Console.WriteLine("-1 Aggiungi un videogame\n-2 Cerca videogame per ID\n-3 Cerca videogame per Titolo\n-4 Elimina un videogioco\n-5 Aggiungere software house\n-6 Chiudi il programma");
 
                 userChoice = int.Parse(Console.ReadLine());
 
@@ -63,60 +64,100 @@ namespace net_ef_videogame
                             }
                             catch (Exception ex) { Console.WriteLine(ex.Message); }
                         }
-
-                        
                         break;
 
-                    //case 2:
-                    //    Console.WriteLine("\nScegliere l'ID del gioco da cercare: ");
-                    //    videoGameId = long.Parse(Console.ReadLine());
-                    //    try
-                    //    {
-                    //        Console.WriteLine(DbVideogameManager.GetVideoGameById(videoGameId).ToString());
+                    case 2:
+                        Console.WriteLine("\nScegliere l'ID del gioco da cercare: ");
+                        videoGameId = long.Parse(Console.ReadLine());
+                        try
+                        {
+                            using(VideogamesContext db = new VideogamesContext())
+                            {
+                                Videogame resault = db.Videogames.Where(v => v.VideogameId == videoGameId).Include(v => v.SoftwareHouse).First();
+                                Console.WriteLine(resault);
+                            }
+                        }
+                        catch (Exception ex) { Console.WriteLine(ex.Message); }
+                        break;
 
-                    //    }
-                    //    catch (Exception ex) { Console.WriteLine(ex.Message); }
+                    case 3:
+                        Console.WriteLine("\nScegliere il nome del gioco da cercare: ");
+                        videoGameName = Console.ReadLine();
+                        try
+                        {
+                            using (VideogamesContext db = new VideogamesContext())
+                            {
+                                List<Videogame> resaults = db.Videogames.Where(v => v.Name.Contains(videoGameName)).Include(v => v.SoftwareHouse).ToList<Videogame>();
 
-                    //    break;
+                                if(resaults.Count > 0)
+                                {
+                                    foreach (var item in resaults)
+                                    {
+                                        Console.WriteLine(item);
+                                    }
+                                }
+                                else
+                                    Console.WriteLine("Nessun risultato :(");
+                            }
+                        }
+                        catch (Exception ex) { Console.WriteLine(ex.Message); }
 
-                    //case 3:
-                    //    Console.WriteLine("\nScegliere il nome del gioco da cercare: ");
-                    //    videoGameName = Console.ReadLine();
-                    //    List<Videogame> videogames = DbVideogameManager.GetVideoGameByName(videoGameName);
+                        break;
 
-                    //    if (videogames.Count() > 0)
-                    //    {
-                    //        foreach (var item in videogames)
-                    //        {
-                    //            Console.WriteLine("--------------------------------------------");
-                    //            Console.WriteLine(item.ToString());
-                    //            Console.WriteLine("--------------------------------------------");
-                    //        }
-                    //        Console.WriteLine($"{Environment.NewLine}{videogames.Count()} risultati trovati{Environment.NewLine}");
-                    //    }
-                    //    else
-                    //    {
-                    //        Console.WriteLine("Nessuna Corrispondenza");
-                    //    }
+                    case 4:
+                        Console.WriteLine("\nScegliere l'ID del gioco da eliminare: ");
+                        videoGameId = long.Parse(Console.ReadLine());
 
-                    //    break;
-                    //case 4:
-                    //    Console.WriteLine("\nScegliere l'ID del gioco da eliminare: ");
-                    //    videoGameId = long.Parse(Console.ReadLine());
-                    //    if (DbVideogameManager.DeleteVideogame(videoGameId))
-                    //        Console.WriteLine("Eliminato con successo");
-                    //    else
-                    //        Console.WriteLine("Nessuna corrispondenza trovata");
+                        try
+                        {
+                            using (VideogamesContext db = new VideogamesContext())
+                            {
+                                Videogame resault = db.Videogames.Where(v => v.VideogameId == videoGameId).First();
+                                db.Remove(resault);
+                                db.SaveChanges();
+                            }
+                        }
+                        catch (Exception ex) { Console.WriteLine(ex.Message); }
+                        break;
 
-                    //    break;
+                    case 5:
+                        Console.WriteLine("Inserire nome software house");
+                        string softwareHouseName = Console.ReadLine();
+                        Console.WriteLine("Inserire P.IVA");
+                        string softwareHouseVat = Console.ReadLine();
+                        Console.WriteLine("Inserire città");
+                        string softwareHouseCity = Console.ReadLine();
+                        Console.WriteLine("Inserire nazione");
+                        string softwareHouseCountry = Console.ReadLine();
+
+                        SoftwareHouse softwareHouse = new SoftwareHouse()
+                        {
+                            Name = softwareHouseName,
+                            VatNumber = softwareHouseVat,
+                            City = softwareHouseCity,
+                            Country = softwareHouseCountry
+                        };
+
+                        using (VideogamesContext db = new VideogamesContext())
+                        {
+                            try
+                            {
+                                db.Add(softwareHouse);
+                                db.SaveChanges();
+                                Console.WriteLine($"La software house {softwareHouse.Name} è stata aggiunta!");
+                            }
+                            catch (Exception ex) { Console.WriteLine(ex.Message); }
+                        }
+                        break;
+
                     default:
-                        userChoice = 5;
+                       
                         break;
                 }
 
 
             }
-            while (userChoice != 5);
+            while (userChoice != 6);
         }
     }
 }
